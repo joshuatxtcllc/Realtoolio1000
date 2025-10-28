@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RealTool - Skip Trace Lead Scoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .config-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .config-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .btn-tertiary {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-tertiary:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+        }
+
+        .leads-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        .lead-card {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        .lead-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .lead-card.hot {
+            border-left-color: #e53e3e;
+            background: #fff5f5;
+        }
+
+        .lead-card.warm {
+            border-left-color: #ed8936;
+            background: #fffaf0;
+        }
+
+        .lead-card.medium {
+            border-left-color: #ecc94b;
+            background: #fffff0;
+        }
+
+        .lead-card.cold {
+            border-left-color: #4299e1;
+            background: #ebf8ff;
+        }
+
+        .lead-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .lead-name {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .lead-score {
+            font-size: 1.5em;
+            font-weight: 700;
+            padding: 5px 15px;
+            border-radius: 20px;
+            background: white;
+        }
+
+        .priority-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .badge-hot { background: #e53e3e; color: white; }
+        .badge-warm { background: #ed8936; color: white; }
+        .badge-medium { background: #ecc94b; color: #333; }
+        .badge-cold { background: #4299e1; color: white; }
+        .badge-ice { background: #718096; color: white; }
+
+        .lead-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .detail-item {
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 3px;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 1em;
+        }
+
+        .insights {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .insight-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+
+        .actions {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .action-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #e6fffa;
+            border-radius: 5px;
+            color: #234e52;
+            font-size: 0.95em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 5px solid #c53030;
+        }
+
+        .success {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 5px solid #22543d;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .filter-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .ai-analysis {
+            background: #f7fafc;
+            border: 2px solid #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏠 RealTool</h1>
+            <p>AI-Powered Skip Trace Lead Scoring System</p>
+        </div>
+
+        <!-- Configuration Section -->
+        <div class="config-section">
+            <h2>⚙️ Configuration</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Google Spreadsheet ID</label>
+                    <input type="text" id="spreadsheetId" placeholder="1hRWTt34EBEsF5-ApkfYqC7Q...">
+                </div>
+                <div class="form-group">
+                    <label>Google Sheets API Key</label>
+                    <input type="password" id="googleApiKey" placeholder="AIzaSy...">
+                </div>
+                <div class="form-group">
+                    <label>OpenAI API Key (Optional)</label>
+                    <input type="password" id="openaiApiKey" placeholder="sk-proj-...">
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn btn-primary" id="loadBtn">
+                    📊 Load & Score Leads
+                </button>
+                <button class="btn btn-secondary" id="analyzeBtn" disabled>
+                    🤖 AI Analyze Top Lead
+                </button>
+                <button class="btn btn-tertiary" id="exportBtn" disabled>
+                    💾 Export CSV
+                </button>
+            </div>
+
+            <div id="statusMessage"></div>
+        </div>
+
+        <!-- Stats Section -->
+        <div id="statsSection" style="display: none;">
+            <div class="stats">
+                <div class="stat-card">
+                    <h3 id="totalLeads">0</h3>
+                    <p>Total Leads</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="hotLeads">0</h3>
+                    <p>🔥 Hot Leads</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="warmLeads">0</h3>
+                    <p>🌡️ Warm Leads</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="avgScore">0</h3>
+                    <p>Avg Score</p>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <button class="filter-btn active" data-filter="all">All Leads</button>
+                <button class="filter-btn" data-filter="HOT">🔥 Hot</button>
+                <button class="filter-btn" data-filter="WARM">🌡️ Warm</button>
+                <button class="filter-btn" data-filter="MEDIUM">😐 Medium</button>
+                <button class="filter-btn" data-filter="COLD">❄️ Cold</button>
+            </div>
+        </div>
+
+        <!-- Leads Display -->
+        <div id="leadsContainer"></div>
+    </div>
+
+    <script>
+        // Global variables
+        let allLeads = [];
+        let scoredLeads = [];
+        let currentFilter = 'all';
+
+        // Get configuration values
+        function getConfig() {
+            return {
+                spreadsheetId: document.getElementById('spreadsheetId').value,
+                googleApiKey: document.getElementById('googleApiKey').value,
+                openaiApiKey: document.getElementById('openaiApiKey').value
+            };
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => statusDiv.innerHTML = '', 5000);
+        }
+
+        // Show loading
+        function showLoading(show = true) {
+            const container = document.getElementById('leadsContainer');
+            if (show) {
+                container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading and scoring leads...</div>';
+            }
+        }
+
+        // Fetch skip trace data from Google Sheets
+        async function fetchSkipTraceData(spreadsheetId, apiKey) {
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!A:Z?key=${apiKey}`;
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Google Sheets API Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const rows = data.values || [];
+            
+            if (rows.length === 0) return [];
+
+            const headers = rows[0].map(h => String(h).toLowerCase().trim());
+            const leads = rows.slice(1).map((row, index) => {
+                const lead = { rowNumber: index + 2 };
+                headers.forEach((header, colIndex) => {
+                    lead[header] = row[colIndex] || '';
+                });
+                return normalizeSkipTraceLead(lead);
+            });
+
+            return leads;
+        }
+
+        // Normalize skip trace lead data
+        function normalizeSkipTraceLead(lead) {
+            return {
+                id: lead.id || lead.row_id || lead.rownumber,
+                rowNumber: lead.rowNumber,
+                ownerName: lead.owner_name || lead.owner || lead.name || `${lead.first_name || ''} ${lead.last_name || ''}`.trim(),
+                phone1: lead.phone || lead.phone_1 || lead.phone1 || '',
+                phone2: lead.phone_2 || lead.phone2 || '',
+                email: lead.email || lead.email_address || '',
+                address: lead.address || lead.property_address || '',
+                city: lead.city || '',
+                state: lead.state || '',
+                zip: lead.zip || lead.zipcode || '',
+                propertyType: lead.property_type || lead.type || '',
+                yearBuilt: parseInt(lead.year_built || lead.year || 0),
+                assessedValue: parseFloat(lead.assessed_value || lead.tax_assessed_value || 0),
+                marketValue: parseFloat(lead.market_value || lead.estimated_value || 0),
+                estimatedEquity: parseFloat(lead.estimated_equity || lead.equity || 0),
+                taxDelinquent: String(lead.tax_delinquent || lead.delinquent || '').toLowerCase() === 'yes',
+                foreclosure: String(lead.foreclosure || lead.pre_foreclosure || '').toLowerCase() === 'yes',
+                vacant: String(lead.vacant || '').toLowerCase() === 'yes',
+                absenteeOwner: String(lead.absentee_owner || lead.absentee || '').toLowerCase() === 'yes',
+                outOfStateOwner: String(lead.out_of_state || '').toLowerCase() === 'yes',
+                daysOnMarket: parseInt(lead.days_on_market || lead.dom || 0),
+                listed: String(lead.listed || '').toLowerCase() === 'yes',
+                distressIndicators: identifyDistressIndicators(lead),
+                rawData: lead
+            };
+        }
+
+        // Identify distress indicators
+        function identifyDistressIndicators(lead) {
+            const indicators = [];
+            if (String(lead.tax_delinquent || '').toLowerCase() === 'yes') indicators.push('Tax Delinquent');
+            if (String(lead.foreclosure || '').toLowerCase() === 'yes') indicators.push('Foreclosure');
+            if (String(lead.vacant || '').toLowerCase() === 'yes') indicators.push('Vacant');
+            if (String(lead.absentee_owner || '').toLowerCase() === 'yes') indicators.push('Absentee Owner');
+            if (String(lead.out_of_state || '').toLowerCase() === 'yes') indicators.push('Out of State');
+            return indicators;
+        }
+
+        // Score leads
+        function scoreLeads(leads) {
+            return leads.map(lead => {
+                const scores = {
+                    distress: scoreDistressIndicators(lead.distressIndicators),
+                    equity: scoreEquity(lead.estimatedEquity, lead.marketValue || lead.assessedValue),
+                    propertyAge: scorePropertyAge(lead.yearBuilt),
+                    taxDelinquency: lead.taxDelinquent ? 100 : 30,
+                    ownership: scoreOwnership(lead),
+                    timeOnMarket: scoreTimeOnMarket(lead.daysOnMarket, lead.listed)
+                };
+
+                const totalScore = (
+                    scores.distress * 0.30 +
+                    scores.equity * 0.20 +
+                    scores.propertyAge * 0.10 +
+                    scores.taxDelinquency * 0.15 +
+                    scores.ownership * 0.15 +
+                    scores.timeOnMarket * 0.10
+                );
+
+                return {
+                    ...lead,
+                    likelyToSell: totalScore,
+                    priority: getPriority(totalScore),
+                    insights: generateInsights(lead, scores),
+                    offerRange: calculateOfferRange(lead)
+                };
+            }).sort((a, b) => b.likelyToSell - a.likelyToSell);
+        }
+
+        function scoreDistressIndicators(indicators) {
+            if (!indicators || indicators.length === 0) return 20;
+            return Math.min(100, indicators.length * 25);
+        }
+
+        function scoreEquity(equity, value) {
+            if (!equity || !value || value === 0) return 50;
+            const pct = (equity / value) * 100;
+            if (pct < 0) return 95;
+            if (pct >= 70) return 100;
+            if (pct >= 50) return 70;
+            if (pct >= 30) return 60;
+            return 50;
+        }
+
+        function scorePropertyAge(yearBuilt) {
+            if (!yearBuilt) return 50;
+            const age = new Date().getFullYear() - yearBuilt;
+            if (age >= 60) return 90;
+            if (age >= 40) return 75;
+            if (age >= 30) return 65;
+            return 40;
+        }
+
+        function scoreOwnership(lead) {
+            let score = 50;
+            if (lead.absenteeOwner) score += 20;
+            if (lead.outOfStateOwner) score += 15;
+            if (lead.vacant) score += 20;
+            return Math.min(100, score);
+        }
+
+        function scoreTimeOnMarket(days, isListed) {
+            if (!isListed) return 50;
+            if (days >= 365) return 100;
+            if (days >= 180) return 85;
+            if (days >= 90) return 70;
+            return 50;
+        }
+
+        function getPriority(score) {
+            if (score >= 80) return 'HOT';
+            if (score >= 65) return 'WARM';
+            if (score >= 50) return 'MEDIUM';
+            if (score >= 35) return 'COLD';
+            return 'ICE';
+        }
+
+        function generateInsights(lead, scores) {
+            const insights = [];
+            if (lead.distressIndicators?.length > 0) {
+                insights.push(`⚠️ Distress: ${lead.distressIndicators.join(', ')}`);
+            }
+            if (lead.foreclosure) insights.push('🚨 Foreclosure - Time sensitive!');
+            if (lead.taxDelinquent) insights.push('💸 Tax delinquent');
+            if (lead.vacant) insights.push('🏚️ Vacant property');
+            if (lead.absenteeOwner) insights.push('🗺️ Absentee owner');
+            return insights;
+        }
+
+        function calculateOfferRange(lead) {
+            const value = lead.marketValue || lead.assessedValue || 0;
+            if (value === 0) return null;
+            return {
+                low: Math.round(value * 0.55),
+                mid: Math.round(value * 0.65),
+                high: Math.round(value * 0.75),
+                market: value
+            };
+        }
+
+        // Display leads
+        function displayLeads(leads) {
+            const container = document.getElementById('leadsContainer');
+            
+            if (leads.length === 0) {
+                container.innerHTML = '<div class="leads-container"><p>No leads to display</p></div>';
+                return;
+            }
+
+            let html = '<div class="leads-container"><h2>📋 Scored Leads</h2>';
+            
+            leads.forEach((lead, index) => {
+                const priorityClass = lead.priority.toLowerCase().replace('🔥 ', '').replace('🌡️ ', '').replace('😐 ', '').replace('❄️ ', '').replace('🧊 ', '');
+                const badgeClass = `badge-${priorityClass}`;
+                
+                html += `
+                    <div class="lead-card ${priorityClass}">
+                        <div class="lead-header">
+                            <div>
+                                <div class="lead-name">${index + 1}. ${lead.ownerName || 'Unknown'}</div>
+                                <span class="priority-badge ${badgeClass}">${lead.priority}</span>
+                            </div>
+                            <div class="lead-score">${lead.likelyToSell.toFixed(1)}/100</div>
+                        </div>
+                        
+                        <div class="lead-details">
+                            <div class="detail-item">
+                                <div class="detail-label">📍 Address</div>
+                                <div class="detail-value">${lead.address || 'N/A'}, ${lead.city || ''}, ${lead.state || ''}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">📞 Phone</div>
+                                <div class="detail-value">${lead.phone1 || 'N/A'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">💰 Market Value</div>
+                                <div class="detail-value">$${lead.marketValue?.toLocaleString() || 'N/A'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">💵 Equity</div>
+                                <div class="detail-value">$${lead.estimatedEquity?.toLocaleString() || 'N/A'}</div>
+                            </div>
+                        </div>
+
+                        ${lead.offerRange ? `
+                            <div class="lead-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">💡 Offer Range</div>
+                                    <div class="detail-value">$${lead.offerRange.low.toLocaleString()} - $${lead.offerRange.high.toLocaleString()}</div>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${lead.insights?.length > 0 ? `
+                            <div class="insights">
+                                <strong>💡 Insights:</strong>
+                                ${lead.insights.map(i => `<div class="insight-item">${i}</div>`).join('')}
+                            </div>
+                        ` : ''}
+
+                        <div class="actions">
+                            <strong>✅ Recommended Actions:</strong>
+                            ${lead.priority.includes('HOT') ? `
+                                <div class="action-item">• CALL IMMEDIATELY - Top priority</div>
+                                <div class="action-item">• Prepare cash or creative offer</div>
+                            ` : lead.priority.includes('WARM') ? `
+                                <div class="action-item">• Call within 24-48 hours</div>
+                                <div class="action-item">• Build rapport first</div>
+                            ` : `
+                                <div class="action-item">• Add to regular rotation</div>
+                                <div class="action-item">• Send introductory letter</div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Update stats
+        function updateStats(leads) {
+            document.getElementById('totalLeads').textContent = leads.length;
+            document.getElementById('hotLeads').textContent = leads.filter(l => l.priority.includes('HOT')).length;
+            document.getElementById('warmLeads').textContent = leads.filter(l => l.priority.includes('WARM')).length;
+            
+            const avgScore = leads.reduce((sum, l) => sum + l.likelyToSell, 0) / leads.length;
+            document.getElementById('avgScore').textContent = avgScore.toFixed(1);
+            
+            document.getElementById('statsSection').style.display = 'block';
+        }
+
+        // Load and score leads
+        document.getElementById('loadBtn').addEventListener('click', async () => {
+            const config = getConfig();
+            
+            if (!config.spreadsheetId || !config.googleApiKey) {
+                showStatus('Please enter both Spreadsheet ID and Google API Key', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                document.getElementById('loadBtn').disabled = true;
+
+                // Fetch data
+                allLeads = await fetchSkipTraceData(config.spreadsheetId, config.googleApiKey);
+                
+                if (allLeads.length === 0) {
+                    throw new Error('No data found in spreadsheet');
+                }
+
+                // Score leads
+                scoredLeads = scoreLeads(allLeads);
+                
+                // Update UI
+                updateStats(scoredLeads);
+                displayLeads(scoredLeads);
+                
+                document.getElementById('analyzeBtn').disabled = false;
+                document.getElementById('exportBtn').disabled = false;
+                
+                showStatus(`✅ Successfully loaded and scored ${scoredLeads.length} leads!`, 'success');
+                
+            } catch (error) {
+                console.error(error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+                document.getElementById('leadsContainer').innerHTML = '';
+            } finally {
+                document.getElementById('loadBtn').disabled = false;
+            }
+        });
+
+        // AI Analysis
+        document.getElementById('analyzeBtn').addEventListener('click', async () => {
+            const config = getConfig();
+            
+            if (!config.openaiApiKey) {
+                showStatus('Please enter OpenAI API Key for AI analysis', 'error');
+                return;
+            }
+
+            if (scoredLeads.length === 0) {
+                showStatus('Please load leads first', 'error');
+                return;
+            }
+
+            const topLead = scoredLeads[0];
+            
+            try {
+                document.getElementById('analyzeBtn').disabled = true;
+                showStatus('🤖 AI is analyzing the top lead...', 'info');
+
+                // Prepare AI prompt
+                const prompt = `Analyze this real estate lead and provide:
+1. Opening call script (first 30 seconds)
+2. Key questions to ask
+3. Best deal structure recommendation
+4. Specific offer amount
+
+LEAD DATA:
+- Owner: ${topLead.ownerName}
+- Property: ${topLead.address}, ${topLead.city}, ${topLead.state}
+- Market Value: $${topLead.marketValue?.toLocaleString()}
+- Equity: $${topLead.estimatedEquity?.toLocaleString()}
+- Distress: ${topLead.distressIndicators?.join(', ')}
+- Score: ${topLead.likelyToSell.toFixed(1)}/100`;
+
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.openaiApiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4',
+                        messages: [
+                            { role: 'system', content: 'You are an expert real estate wholesaler. Provide actionable, specific advice.' },
+                            { role: 'user', content: prompt }
+                        ],
+                        max_tokens: 1000
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`OpenAI API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const analysis = data.choices[0].message.content;
+
+                // Display AI analysis
+                const container = document.getElementById('leadsContainer');
+                container.innerHTML = `
+                    <div class="leads-container">
+                        <h2>🤖 AI Analysis for: ${topLead.ownerName}</h2>
+                        <div class="ai-analysis">${analysis}</div>
+                        <button class="btn btn-primary" onclick="location.reload()">← Back to Leads</button>
+                    </div>
+                ` + container.innerHTML;
+
+                showStatus('✅ AI analysis complete!', 'success');
+
+            } catch (error) {
+                console.error(error);
+                showStatus(`❌ AI Analysis Error: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        });
+
+        // Export to CSV
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            if (scoredLeads.length === 0) {
+                showStatus('No leads to export', 'error');
+                return;
+            }
+
+            const headers = ['Score', 'Priority', 'Owner', 'Address', 'City', 'State', 'Phone', 'Email', 'Market Value', 'Equity', 'Distress'];
+            const rows = scoredLeads.map(lead => [
+                lead.likelyToSell.toFixed(1),
+                lead.priority,
+                lead.ownerName,
+                lead.address,
+                lead.city,
+                lead.state,
+                lead.phone1,
+                lead.email,
+                lead.marketValue || '',
+                lead.estimatedEquity || '',
+                lead.distressIndicators?.join('; ') || ''
+            ]);
+
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csv += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `realtool-leads-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+
+            showStatus('✅ CSV exported successfully!', 'success');
+        });
+
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                const filter = e.target.dataset.filter;
+                
+                if (filter === 'all') {
+                    displayLeads(scoredLeads);
+                } else {
+                    const filtered = scoredLeads.filter(lead => lead.priority.includes(filter));
+                    displayLeads(filtered);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
